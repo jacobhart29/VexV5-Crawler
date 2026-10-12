@@ -10,21 +10,70 @@ front_left  = Motor(Ports.PORT10, GearSetting.RATIO_18_1, False)
 back_right  = Motor(Ports.PORT16, GearSetting.RATIO_18_1, True)
 back_left   = Motor(Ports.PORT17, GearSetting.RATIO_18_1, False)
 
-# Sensors & Receiver Setup
+# Sensors Setup
 ai_cam_left  = AiVision(Ports.PORT15)
 ai_cam_right = AiVision(Ports.PORT20)
 
+
 def handle_ai_cam():
     left_objects = ai_cam_left.take_snapshot(AiVision.ALL_TAGS)
-    right_object = ai_cam_right.take_snapshot(AiVision.ALL_TAGS)
+    right_objects = ai_cam_right.take_snapshot(AiVision.ALL_TAGS)
 
-    if left_objects[0].exists == True:
-        AiVisionObject = left_objects[0]
-        print("OBJECT ID ON LEFT:", AiVisionObject.id)
-    elif right_object[0].exists == True:
-        AiVisionObject = right_object[0]
-        print("OBJECT ID ON RIGHT:", AiVisionObject.id)
-    else: print("NO OBJECT DETECTED")
+    if left_objects and left_objects[0].exists:
+        print("OBJECT ID ON LEFT:", left_objects[0].id)
+    elif right_objects and right_objects[0].exists:
+        print("OBJECT ID ON RIGHT:", right_objects[0].id)
+    else:
+        print("NO OBJECT DETECTED")
+
+
+def move_forward(AMOUNT, SPEED):
+    front_left.spin(FORWARD, SPEED, PERCENT)
+    front_right.spin(FORWARD, SPEED, PERCENT)
+    back_left.spin(FORWARD, SPEED, PERCENT)
+    back_right.spin(FORWARD, SPEED, PERCENT)
+    wait(AMOUNT, MSEC)
+    front_left.stop()
+    front_right.stop()
+    back_left.stop()
+    back_right.stop()
+
+
+def move_backward(AMOUNT, SPEED):
+    front_left.spin(REVERSE, SPEED, PERCENT)
+    front_right.spin(REVERSE, SPEED, PERCENT)
+    back_left.spin(REVERSE, SPEED, PERCENT)
+    back_right.spin(REVERSE, SPEED, PERCENT)
+    wait(AMOUNT, MSEC)
+    front_left.stop()
+    front_right.stop()
+    back_left.stop()
+    back_right.stop()
+
+
+def move_left(AMOUNT, SPEED):
+    front_left.spin(REVERSE, SPEED, PERCENT)
+    front_right.spin(FORWARD, SPEED, PERCENT)
+    back_left.spin(FORWARD, SPEED, PERCENT)
+    back_right.spin(REVERSE, SPEED, PERCENT)
+    wait(AMOUNT, MSEC)
+    front_left.stop()
+    front_right.stop()
+    back_left.stop()
+    back_right.stop()
+
+
+def move_right(AMOUNT, SPEED):
+    front_left.spin(FORWARD, SPEED, PERCENT)
+    front_right.spin(REVERSE, SPEED, PERCENT)
+    back_left.spin(REVERSE, SPEED, PERCENT)
+    back_right.spin(FORWARD, SPEED, PERCENT)
+    wait(AMOUNT, MSEC)
+    front_left.stop()
+    front_right.stop()
+    back_left.stop()
+    back_right.stop()
+
 
 def drive_mecanum():
     """
@@ -33,7 +82,9 @@ def drive_mecanum():
     - Left Joystick X (Axis 4): Strafe Left / Right
     - Right Joystick X (Axis 1): Turn Left / Right
     """
-    deadband = 5  # Prevents motor drift when joysticks are resting
+    deadband = 5
+    cam_interval = 20 
+    cam_timer = 0
 
     while True:
         forward = controller.axis3.position()
@@ -64,6 +115,12 @@ def drive_mecanum():
         back_left.spin(FORWARD, bl_power, PERCENT)
         back_right.spin(FORWARD, br_power, PERCENT)
 
+        cam_timer += 20
+        if cam_timer >= cam_interval:
+            handle_ai_cam()
+            cam_timer = 0
+
         wait(20, MSEC)
+
 
 drive_mecanum()
