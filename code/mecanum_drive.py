@@ -11,18 +11,19 @@ back_right  = Motor(Ports.PORT16, GearSetting.RATIO_18_1, True)
 back_left   = Motor(Ports.PORT17, GearSetting.RATIO_18_1, False)
 
 # Sensors & Receiver Setup
-ai_cam_left  = Aivision(Ports.PORT15)
-ai_cam_right = Aivision(Ports.PORT20)
-rf_receiver  = Radio(Ports.PORT2)
+ai_cam_left  = AiVision(Ports.PORT15)
+ai_cam_right = AiVision(Ports.PORT20)
 
 def handle_ai_cam():
     left_objects = ai_cam_left.take_snapshot(AiVision.ALL_TAGS)
     right_object = ai_cam_right.take_snapshot(AiVision.ALL_TAGS)
 
     if left_objects[0].exists == True:
-        print("OBJECT ON LEFT")
+        AiVisionObject = left_objects[0]
+        print("OBJECT ID ON LEFT:", AiVisionObject.id)
     elif right_object[0].exists == True:
-        print("OBJECT ON THE RIGHT")
+        AiVisionObject = right_object[0]
+        print("OBJECT ID ON RIGHT:", AiVisionObject.id)
     else: print("NO OBJECT DETECTED")
 
 def drive_mecanum():
